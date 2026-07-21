@@ -1,0 +1,42 @@
+managed implementation in class zbp_i_ts_resident unique;
+//strict ( 2 );
+with draft;
+
+define behavior for ZI_TS_RESIDENT alias Resident
+persistent table zts_resident
+draft table zts_res_d
+lock master
+total etag LastChangedAt
+etag master LocalLastChangedAt
+authorization master ( instance )
+{
+  create;
+  update;
+  delete;
+
+  field ( numbering : managed, readonly ) ResidentId;
+  field ( readonly ) CreatedAt, CreatedBy, LastChangedAt, LastChangedBy, LocalLastChangedAt;
+
+  draft action Edit;
+  draft action Activate;
+  draft action Discard;
+  draft action Resume;
+  //draft determine action Prepare;
+
+  mapping for zts_resident
+  {
+    ResidentId       = resident_id;
+    BlockId          = block_id;
+    ApartmentNo      = apartment_no;
+    FirstName        = first_name;
+    LastName         = last_name;
+    PhoneNumber      = phone_number;
+    IsOwner          = is_owner;
+    PortalStatus     = portal_status;
+    CreatedBy        = created_by;
+    CreatedAt        = created_at;
+    LastChangedBy    = last_changed_by;
+    LastChangedAt    = last_changed_at;
+    LocalLastChangedAt = local_last_changed_at;
+  }
+}

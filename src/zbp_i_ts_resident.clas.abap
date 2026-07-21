@@ -1,0 +1,9 @@
+CLASS zbp_i_ts_resident DEFINITION
+  PUBLIC
+  ABSTRACT
+  FINAL
+  FOR BEHAVIOR OF zi_ts_resident.
+ENDCLASS.
+
+CLASS zbp_i_ts_resident IMPLEMENTATION.
+ENDCLASS.

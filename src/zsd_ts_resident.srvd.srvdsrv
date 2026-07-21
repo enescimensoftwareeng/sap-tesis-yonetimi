@@ -1,0 +1,4 @@
+@EndUserText.label: 'Sakinler Servis Tanımı'
+define service ZSD_TS_RESIDENT {
+  expose ZI_TS_RESIDENT as Resident;
+}
