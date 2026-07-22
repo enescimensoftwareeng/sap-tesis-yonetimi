@@ -25,6 +25,8 @@ authorization master ( instance )
 
   validation validateMandatoryFields on save { create; update; field FirstName, LastName, ApartmentNo; }
 
+  determination setInitialStatus on modify { create; }
+
   mapping for zts_resident
   {
     ResidentId       = resident_id;

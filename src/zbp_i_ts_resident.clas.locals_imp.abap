@@ -5,6 +5,8 @@ CLASS lhc_resident DEFINITION INHERITING FROM cl_abap_behavior_handler.
       IMPORTING keys REQUEST requested_authorizations FOR resident RESULT result.
     METHODS validatemandatoryfields FOR VALIDATE ON SAVE
       IMPORTING keys FOR resident~validatemandatoryfields.
+    METHODS setinitialstatus FOR DETERMINE ON MODIFY
+      IMPORTING keys FOR resident~setinitialstatus.
 
 ENDCLASS.
 
@@ -62,4 +64,36 @@ CLASS lhc_resident IMPLEMENTATION.
 
     ENDLOOP.
   ENDMETHOD.
+  METHOD setInitialStatus.
+    " 1. Eklenen yeni kayıtların güncel durumunu oku
+    READ ENTITIES OF ZI_TS_RESIDENT IN LOCAL MODE
+      ENTITY Resident
+        FIELDS ( PortalStatus ) WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_residents).
+
+    " 2. Güncellenecek veriler için geçici bir tablo oluştur
+    DATA: lt_update TYPE TABLE FOR UPDATE ZI_TS_RESIDENT.
+
+    " 3. Kayıtları döngüye al
+    LOOP AT lt_residents INTO DATA(ls_resident).
+      " Eğer kullanıcı portal durumunu boş bıraktıysa 'BEKLEMEDE' olarak ayarla
+      IF ls_resident-PortalStatus IS INITIAL.
+        APPEND VALUE #( %tky = ls_resident-%tky
+                        PortalStatus = 'BEKLEMEDE'
+                        %control-PortalStatus = if_abap_behv=>mk-on ) TO lt_update.
+      ENDIF.
+    ENDLOOP.
+
+    " 4. Eğer değiştirilecek bir kayıt varsa veritabanını (taslağı) güncelle
+    IF lt_update IS NOT INITIAL.
+      MODIFY ENTITIES OF ZI_TS_RESIDENT IN LOCAL MODE
+        ENTITY Resident
+          UPDATE FROM lt_update
+        REPORTED DATA(lt_reported).
+
+      " Olası sistem mesajlarını UI tarafına ilet
+      reported-resident = CORRESPONDING #( lt_reported-resident ).
+    ENDIF.
+  ENDMETHOD.
+
 ENDCLASS.
