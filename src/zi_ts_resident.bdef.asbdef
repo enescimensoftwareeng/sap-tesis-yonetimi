@@ -27,6 +27,8 @@ authorization master ( instance )
 
   determination setInitialStatus on modify { create; }
 
+  action setActive result [1] $self;
+
   mapping for zts_resident
   {
     ResidentId       = resident_id;

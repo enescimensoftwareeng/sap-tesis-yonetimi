@@ -1,61 +1,76 @@
 @Metadata.layer: #CORE
-@UI: {
-  headerInfo: { typeName: 'Sakin',
-                typeNamePlural: 'Site Sakinleri',
-                title: { type: #STANDARD, label: 'Sakin', value: 'LastName' } }
-}
-annotate view ZI_TS_RESIDENT
-  with
+annotate view ZI_TS_RESIDENT with
 {
-  @UI.facet: [ { id:              'SakinDetay',
-                 purpose:         #STANDARD,
-                 type:            #IDENTIFICATION_REFERENCE,
-                 label:           'Genel Bilgiler',
-                 position:        10 } ]
+  // 1. Yeni Kayıt (Object Page) Ekranındaki Form Yapısı (Facet)
+  @UI.facet: [ {
+    id:       'GenelBilgiler',
+    purpose:  #STANDARD,
+    type:     #IDENTIFICATION_REFERENCE,
+    label:    'Sakin Detayları',
+    position: 10
+  } ]
 
   @UI.hidden: true
   ResidentId;
 
-  @UI: { lineItem:       [ { position: 10, label: 'Blok' } ],
-         identification: [ { position: 10, label: 'Blok' } ],
-         selectionField: [ { position: 10 } ] }
+  // 2. Alanların Hem Tabloda (lineItem) Hem Formda (identification) Gösterimi
+  @UI: {
+    lineItem: [ { position: 10 } ],
+    identification: [ { position: 10, label: 'Blok' } ]
+  }
   BlockId;
 
-  @UI: { lineItem:       [ { position: 20, label: 'Daire No' } ],
-         identification: [ { position: 20, label: 'Daire No' } ],
-         selectionField: [ { position: 20 } ] }
+  @UI: {
+    lineItem: [ { position: 20 } ],
+    identification: [ { position: 20, label: 'Daire No' } ]
+  }
   ApartmentNo;
 
-  @UI: { lineItem:       [ { position: 30, label: 'Ad' } ],
-         identification: [ { position: 30, label: 'Ad' } ],
-         selectionField: [ { position: 30 } ] }
+  @UI: {
+    lineItem: [ { position: 30 } ],
+    identification: [ { position: 30, label: 'Ad' } ]
+  }
   FirstName;
 
-  @UI: { lineItem:       [ { position: 40, label: 'Soyad' } ],
-         identification: [ { position: 40, label: 'Soyad' } ] }
+  @UI: {
+    lineItem: [ { position: 40 } ],
+    identification: [ { position: 40, label: 'Soyad' } ]
+  }
   LastName;
 
-  @UI: { lineItem:       [ { position: 50, label: 'Telefon' } ],
-         identification: [ { position: 50, label: 'Telefon' } ] }
+  @UI: {
+    lineItem: [ { position: 50 } ],
+    identification: [ { position: 50, label: 'Telefon Numarası' } ]
+  }
   PhoneNumber;
 
-  @UI: { lineItem:       [ { position: 60, label: 'Ev Sahibi mi?' } ],
-         identification: [ { position: 60, label: 'Ev Sahibi mi?' } ] }
+  @UI: {
+    lineItem: [ { position: 60 } ],
+    identification: [ { position: 60, label: 'Ev Sahibi mi?' } ]
+  }
   IsOwner;
 
-  @UI: { lineItem:       [ { position: 70, label: 'Durum' } ],
-         identification: [ { position: 70, label: 'Durum' } ] }
+  // ---> DEĞİŞİKLİK YAPILAN KISIM BURASI <---
+  @UI: {
+    lineItem: [ { position: 70 },
+                { type: #FOR_ACTION, dataAction: 'setActive', label: 'Aktif Yap', position: 71 } ], 
+    identification: [ { position: 70, label: 'Portal Durumu' },
+                      { type: #FOR_ACTION, dataAction: 'setActive', label: 'Aktif Yap', position: 71 } ] 
+  }
   PortalStatus;
-
-  /* Sistemsel alanları arayüzde gizliyoruz */
+  
   @UI.hidden: true
   CreatedBy;
+  
   @UI.hidden: true
   CreatedAt;
+  
   @UI.hidden: true
   LastChangedBy;
+  
   @UI.hidden: true
   LastChangedAt;
+  
   @UI.hidden: true
   LocalLastChangedAt;
 }

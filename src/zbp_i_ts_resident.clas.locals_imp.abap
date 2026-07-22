@@ -7,6 +7,8 @@ CLASS lhc_resident DEFINITION INHERITING FROM cl_abap_behavior_handler.
       IMPORTING keys FOR resident~validatemandatoryfields.
     METHODS setinitialstatus FOR DETERMINE ON MODIFY
       IMPORTING keys FOR resident~setinitialstatus.
+    METHODS setactive FOR MODIFY
+      IMPORTING keys FOR ACTION resident~setactive RESULT result.
 
 ENDCLASS.
 
@@ -94,6 +96,26 @@ CLASS lhc_resident IMPLEMENTATION.
       " Olası sistem mesajlarını UI tarafına ilet
       reported-resident = CORRESPONDING #( lt_reported-resident ).
     ENDIF.
+  ENDMETHOD.
+
+  METHOD setActive.
+    " 1. Seçilen kayıtların durumunu 'AKTİF' olarak güncelle
+    MODIFY ENTITIES OF ZI_TS_RESIDENT IN LOCAL MODE
+      ENTITY Resident
+        UPDATE
+          FIELDS ( PortalStatus )
+          WITH VALUE #( FOR key IN keys ( %tky = key-%tky PortalStatus = 'AKTİF' ) )
+      FAILED failed
+      REPORTED reported.
+
+    " 2. Ekranın (Fiori) güncel veriyi anında görebilmesi için kaydı tekrar oku
+    READ ENTITIES OF ZI_TS_RESIDENT IN LOCAL MODE
+      ENTITY Resident
+        ALL FIELDS WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_residents).
+
+    " 3. Güncel veriyi Fiori UI'a sonuç (result) olarak geri gönder
+    result = VALUE #( FOR resident IN lt_residents ( %tky = resident-%tky %param = resident ) ).
   ENDMETHOD.
 
 ENDCLASS.

@@ -1,5 +1,6 @@
 @AccessControl.authorizationCheck: #NOT_REQUIRED
 @EndUserText.label: 'Sakinler CDS View'
+@Metadata.allowExtensions: true
 define root view entity ZI_TS_RESIDENT
   as select from zts_resident
 {
