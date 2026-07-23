@@ -1,14 +1,23 @@
 @AccessControl.authorizationCheck: #NOT_REQUIRED
+@Search.searchable: true
 @EndUserText.label: 'Sakinler CDS View'
 @Metadata.allowExtensions: true
 define root view entity ZI_TS_RESIDENT
   as select from zts_resident
 {
   key resident_id            as ResidentId,
+  
+      @Search.defaultSearchElement: true
       block_id               as BlockId,
+      
       apartment_no           as ApartmentNo,
+      
+      @Search.defaultSearchElement: true
       first_name             as FirstName,
+      
+      @Search.defaultSearchElement: true
       last_name              as LastName,
+      
       phone_number           as PhoneNumber,
       is_owner               as IsOwner,
       

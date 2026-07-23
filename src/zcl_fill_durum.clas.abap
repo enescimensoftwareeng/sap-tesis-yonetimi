@@ -4,7 +4,7 @@ CLASS zcl_fill_durum DEFINITION
   CREATE PUBLIC .
 
   PUBLIC SECTION.
-    INTERFACES if_oo_adt_classrun. " Bu arayüz, sınıfı konsolda (F9 ile) çalıştırılabilir yapar
+    INTERFACES if_oo_adt_classrun.
   PROTECTED SECTION.
   PRIVATE SECTION.
 ENDCLASS.

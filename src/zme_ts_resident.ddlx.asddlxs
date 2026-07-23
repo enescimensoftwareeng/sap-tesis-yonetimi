@@ -16,7 +16,8 @@ annotate view ZI_TS_RESIDENT with
   // 2. Alanların Hem Tabloda (lineItem) Hem Formda (identification) Gösterimi
   @UI: {
     lineItem: [ { position: 10 } ],
-    identification: [ { position: 10, label: 'Blok' } ]
+    identification: [ { position: 10, label: 'Blok' } ],
+    selectionField: [ { position: 10 } ] // <-- Ekrana Blok filtresi eklendi
   }
   BlockId;
 
@@ -50,12 +51,12 @@ annotate view ZI_TS_RESIDENT with
   }
   IsOwner;
 
-  // ---> DEĞİŞİKLİK YAPILAN KISIM BURASI <---
   @UI: {
     lineItem: [ { position: 70 },
                 { type: #FOR_ACTION, dataAction: 'setActive', label: 'Aktif Yap', position: 71 } ], 
     identification: [ { position: 70, label: 'Portal Durumu' },
-                      { type: #FOR_ACTION, dataAction: 'setActive', label: 'Aktif Yap', position: 71 } ] 
+                      { type: #FOR_ACTION, dataAction: 'setActive', label: 'Aktif Yap', position: 71 } ],
+    selectionField: [ { position: 20 } ] // <-- Ekrana Durum filtresi eklendi
   }
   PortalStatus;
   
