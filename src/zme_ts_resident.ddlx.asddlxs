@@ -1,7 +1,18 @@
 @Metadata.layer: #CORE
+@UI.headerInfo: {
+  typeName: 'Sakin',
+  typeNamePlural: 'Sakinler',
+  title: {
+    type: #STANDARD,
+    value: 'FirstName'
+  },
+  description: {
+    type: #STANDARD,
+    value: 'LastName'
+  }
+}
 annotate view ZI_TS_RESIDENT with
 {
-  // 1. Yeni Kayıt (Object Page) Ekranındaki Form Yapısı (Facet)
   @UI.facet: [ {
     id:       'GenelBilgiler',
     purpose:  #STANDARD,
@@ -13,11 +24,10 @@ annotate view ZI_TS_RESIDENT with
   @UI.hidden: true
   ResidentId;
 
-  // 2. Alanların Hem Tabloda (lineItem) Hem Formda (identification) Gösterimi
   @UI: {
     lineItem: [ { position: 10 } ],
     identification: [ { position: 10, label: 'Blok' } ],
-    selectionField: [ { position: 10 } ] // <-- Ekrana Blok filtresi eklendi
+    selectionField: [ { position: 10 } ]
   }
   BlockId;
 
@@ -52,11 +62,11 @@ annotate view ZI_TS_RESIDENT with
   IsOwner;
 
   @UI: {
-    lineItem: [ { position: 70 },
+    lineItem: [ { position: 70, criticality: 'PortalStatusCriticality' },
                 { type: #FOR_ACTION, dataAction: 'setActive', label: 'Aktif Yap', position: 71 } ], 
-    identification: [ { position: 70, label: 'Portal Durumu' },
+    identification: [ { position: 70, label: 'Portal Durumu', criticality: 'PortalStatusCriticality' },
                       { type: #FOR_ACTION, dataAction: 'setActive', label: 'Aktif Yap', position: 71 } ],
-    selectionField: [ { position: 20 } ] // <-- Ekrana Durum filtresi eklendi
+    selectionField: [ { position: 20 } ]
   }
   PortalStatus;
   
@@ -74,4 +84,8 @@ annotate view ZI_TS_RESIDENT with
   
   @UI.hidden: true
   LocalLastChangedAt;
+
+  // Renk kodunu arayüze getiren ama ekranda çirkin sayı olarak göstermeyen sihirli alan
+  @UI.hidden: true
+  PortalStatusCriticality;
 }
