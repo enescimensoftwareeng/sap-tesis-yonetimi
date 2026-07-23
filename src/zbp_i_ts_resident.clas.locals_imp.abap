@@ -67,55 +67,70 @@ CLASS lhc_resident IMPLEMENTATION.
     ENDLOOP.
   ENDMETHOD.
   METHOD setInitialStatus.
-    " 1. Eklenen yeni kayıtların güncel durumunu oku
+    " 1. Yeni oluşturulan (Create) kayıtların anahtarlarını alarak mevcut durumlarını oku
     READ ENTITIES OF ZI_TS_RESIDENT IN LOCAL MODE
       ENTITY Resident
         FIELDS ( PortalStatus ) WITH CORRESPONDING #( keys )
       RESULT DATA(lt_residents).
 
-    " 2. Güncellenecek veriler için geçici bir tablo oluştur
-    DATA: lt_update TYPE TABLE FOR UPDATE ZI_TS_RESIDENT.
+    " 2. Sadece Portal Durumu boş bırakılanları bul ve 'BEKLEMEDE' olarak güncellemek için paket hazırla
+    DATA lt_update TYPE TABLE FOR UPDATE ZI_TS_RESIDENT.
 
-    " 3. Kayıtları döngüye al
-    LOOP AT lt_residents INTO DATA(ls_resident).
-      " Eğer kullanıcı portal durumunu boş bıraktıysa 'BEKLEMEDE' olarak ayarla
-      IF ls_resident-PortalStatus IS INITIAL.
-        APPEND VALUE #( %tky = ls_resident-%tky
-                        PortalStatus = 'BEKLEMEDE'
-                        %control-PortalStatus = if_abap_behv=>mk-on ) TO lt_update.
-      ENDIF.
+    LOOP AT lt_residents INTO DATA(ls_resident) WHERE PortalStatus IS INITIAL.
+      APPEND VALUE #(
+        %tky                  = ls_resident-%tky
+        PortalStatus          = 'BEKLEMEDE' " Otomatik atanacak başlangıç değeri
+        %control-PortalStatus = if_abap_behv=>mk-on " Sisteme bu alanın değişeceğini haber ver
+      ) TO lt_update.
     ENDLOOP.
 
-    " 4. Eğer değiştirilecek bir kayıt varsa veritabanını (taslağı) güncelle
+    " 3. Eğer güncellenecek (boş bırakılmış) kayıt varsa veritabanına/taslağa yaz
     IF lt_update IS NOT INITIAL.
       MODIFY ENTITIES OF ZI_TS_RESIDENT IN LOCAL MODE
         ENTITY Resident
           UPDATE FROM lt_update
-        REPORTED DATA(lt_reported).
+        REPORTED DATA(update_reported).
 
-      " Olası sistem mesajlarını UI tarafına ilet
-      reported-resident = CORRESPONDING #( lt_reported-resident ).
+      " Olası sistem mesajlarını ana rapora aktar
+      reported = CORRESPONDING #( DEEP update_reported ).
     ENDIF.
   ENDMETHOD.
 
   METHOD setActive.
-    " 1. Seçilen kayıtların durumunu 'AKTİF' olarak güncelle
-    MODIFY ENTITIES OF ZI_TS_RESIDENT IN LOCAL MODE
-      ENTITY Resident
-        UPDATE
-          FIELDS ( PortalStatus )
-          WITH VALUE #( FOR key IN keys ( %tky = key-%tky PortalStatus = 'AKTİF' ) )
-      FAILED failed
-      REPORTED reported.
-
-    " 2. Ekranın (Fiori) güncel veriyi anında görebilmesi için kaydı tekrar oku
+    " 1. Butona basıldığında seçili olan kayıtların (keys) mevcut durumunu oku
     READ ENTITIES OF ZI_TS_RESIDENT IN LOCAL MODE
       ENTITY Resident
         ALL FIELDS WITH CORRESPONDING #( keys )
       RESULT DATA(lt_residents).
 
-    " 3. Güncel veriyi Fiori UI'a sonuç (result) olarak geri gönder
-    result = VALUE #( FOR resident IN lt_residents ( %tky = resident-%tky %param = resident ) ).
+    " 2. Veritabanını güncellemek için bir değişiklik paketi (Modify Table) hazırla
+    DATA lt_update TYPE TABLE FOR UPDATE ZI_TS_RESIDENT.
+
+    LOOP AT lt_residents INTO DATA(ls_resident).
+      APPEND VALUE #(
+        %tky                  = ls_resident-%tky
+        PortalStatus          = 'AKTİF' " <--- Durumu AKTİF olarak ez
+        %control-PortalStatus = if_abap_behv=>mk-on " Bu alanın güncelleneceğini sisteme bildir
+      ) TO lt_update.
+    ENDLOOP.
+
+    " 3. Hazırlanan değişiklik paketini veritabanına kaydet (Modify)
+    MODIFY ENTITIES OF ZI_TS_RESIDENT IN LOCAL MODE
+      ENTITY Resident
+        UPDATE FROM lt_update
+      FAILED failed
+      REPORTED reported.
+
+    " 4. Güncellenmiş veriyi tekrar oku ve ekrana (Fiori) geri gönder ki tablo yenilensin
+    READ ENTITIES OF ZI_TS_RESIDENT IN LOCAL MODE
+      ENTITY Resident
+        ALL FIELDS WITH CORRESPONDING #( keys )
+      RESULT lt_residents.
+
+    " 5. Sonucu (result) dışarı aktar
+    result = VALUE #( FOR resident IN lt_residents
+                      ( %tky   = resident-%tky
+                        %param = resident ) ).
   ENDMETHOD.
 
 ENDCLASS.

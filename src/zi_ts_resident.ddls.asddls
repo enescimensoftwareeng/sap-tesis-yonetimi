@@ -33,10 +33,12 @@ define root view entity ZI_TS_RESIDENT
       portal_status          as PortalStatus,
       
       case portal_status
-        when 'AKTİF'     then 3 // 3: Yeşil Renk (Olumlu)
-        when 'BEKLEMEDE' then 2 // 2: Sarı/Turuncu Renk (Uyarı)
-        when 'PASİF'     then 1 // 1: Kırmızı Renk (Olumsuz)
-        else 0                  // 0: Gri Renk (Nötr)
+        when 'AKTİF'     then 3
+        when 'AKTIF'     then 3
+        when 'Aktif'     then 3
+        when 'BEKLEMEDE' then 2
+        when 'PASİF'     then 1
+        else 0
       end                    as PortalStatusCriticality,
       
       created_by             as CreatedBy,
