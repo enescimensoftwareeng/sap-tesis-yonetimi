@@ -63,3 +63,31 @@ IF sy-subrc = 0 AND ls_existing-resident_id <> ls_resident-ResidentId.
   APPEND VALUE #( %tky = ls_resident-%tky ) TO failed-resident.
   ...
 ENDIF.
+
+2. Otomatik Durum Atama (setInitialStatus)
+Yeni oluşturulan kayıtlar için sistem arka planda varsayılan statüyü belirler:
+
+ABAP
+LOOP AT lt_residents INTO DATA(ls_resident) WHERE PortalStatus IS INITIAL.
+  APPEND VALUE #(
+    %tky                  = ls_resident-%tky
+    PortalStatus          = 'BEKLEMEDE'
+    %control-PortalStatus = if_abap_behv=>mk-on
+  ) TO lt_update.
+ENDLOOP.
+📷 Ekran Görüntüleri & Kullanım Akışı
+List Report & Filtreleme: Blok ve daire bazlı arama, sıralama ve sayfalama yönetimi.
+
+Object Page & Validasyonlar: Hatalı veya mükerrer girişlerde anlık Fiori hata mesajları.
+
+Aksiyon Yönetimi: "Aktif Yap" butonu ile sakin onay süreçlerinin yönetilmesi.
+
+👨‍💻 Geliştirici
+Muhammed Enes Çimen
+
+Full-Stack Yazılım Mühendisliği Öğrencisi | SAP ABAP & RAP Geliştiricisi
+
+GitHub Profilim
+
+📄 Lisans
+Bu proje MIT lisansı altında korunmaktadır. Eğitim ve portföy amaçlı özgürce incelenebilir.
