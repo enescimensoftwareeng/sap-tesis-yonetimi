@@ -25,6 +25,8 @@ authorization master ( instance )
 
   validation validateMandatoryFields on save { create; update; field FirstName, LastName, ApartmentNo; }
 
+  validation validateApartmentConflict on save { create; update; field BlockId, ApartmentNo; }
+
   determination setInitialStatus on modify { create; }
 
   action setActive result [1] $self;

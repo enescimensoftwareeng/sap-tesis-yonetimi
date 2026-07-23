@@ -3,12 +3,14 @@ CLASS lhc_resident DEFINITION INHERITING FROM cl_abap_behavior_handler.
 
     METHODS get_instance_authorizations FOR INSTANCE AUTHORIZATION
       IMPORTING keys REQUEST requested_authorizations FOR resident RESULT result.
-    METHODS validatemandatoryfields FOR VALIDATE ON SAVE
-      IMPORTING keys FOR resident~validatemandatoryfields.
-    METHODS setinitialstatus FOR DETERMINE ON MODIFY
-      IMPORTING keys FOR resident~setinitialstatus.
-    METHODS setactive FOR MODIFY
-      IMPORTING keys FOR ACTION resident~setactive RESULT result.
+    METHODS validateMandatoryFields FOR VALIDATE ON SAVE
+      IMPORTING keys FOR resident~validateMandatoryFields.
+    METHODS setInitialStatus FOR DETERMINE ON MODIFY
+      IMPORTING keys FOR resident~setInitialStatus.
+    METHODS setActive FOR MODIFY
+      IMPORTING keys FOR ACTION resident~setActive RESULT result.
+    METHODS validateApartmentConflict FOR VALIDATE ON SAVE
+      IMPORTING keys FOR resident~validateApartmentConflict.
 
 ENDCLASS.
 
@@ -87,6 +89,41 @@ CLASS lhc_resident IMPLEMENTATION.
       " Olası sistem mesajlarını ana rapora aktar
       reported = CORRESPONDING #( DEEP update_reported ).
     ENDIF.
+  ENDMETHOD.
+
+  METHOD validateApartmentConflict.
+    " 1. Kaydedilmek istenen kayıtların verilerini oku
+    READ ENTITIES OF ZI_TS_RESIDENT IN LOCAL MODE
+      ENTITY Resident
+        FIELDS ( BlockId ApartmentNo FirstName LastName ) WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_residents).
+
+    IF lt_residents IS INITIAL.
+      EXIT.
+    ENDIF.
+
+    " 2. Veritabanındaki tüm mevcut kayıtları çekerek çakışma taraması yap
+    SELECT FROM zts_resident
+      FIELDS resident_id, block_id, apartment_no
+      INTO TABLE @DATA(lt_existing_residents).
+
+    LOOP AT lt_residents INTO DATA(ls_resident).
+      " Kendi kendini (güncelleme durumunda) çakışma olarak saymaması için ID kontrolü ekliyoruz
+      READ TABLE lt_existing_residents INTO DATA(ls_existing)
+        WITH KEY block_id     = ls_resident-BlockId
+                 apartment_no = ls_resident-ApartmentNo.
+
+      IF sy-subrc = 0 AND ls_existing-resident_id <> ls_resident-ResidentId.
+        " Çakışma tespit edildi! Hata fırlat ve kaydı engelle.
+        APPEND VALUE #( %tky = ls_resident-%tky ) TO failed-resident.
+        APPEND VALUE #( %tky = ls_resident-%tky
+                        %msg = new_message_with_text(
+                                 severity = if_abap_behv_message=>severity-error
+                                 text     = |Bu blok ve daire numarasına ({ ls_resident-BlockId } / { ls_resident-ApartmentNo }) zaten kayıtlı bir sakin bulunuyor!| )
+                        %element-BlockId   = if_abap_behv=>mk-on
+                        %element-ApartmentNo = if_abap_behv=>mk-on ) TO reported-resident.
+      ENDIF.
+    ENDLOOP.
   ENDMETHOD.
 
   METHOD setActive.
